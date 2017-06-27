@@ -10,7 +10,7 @@ def show_all_locations():
 
 @app.route('/')
 def hello_world():
-    return 'Hello Nati! I love you very much!!'
+    return 'Hello! This is the placeholder index page!'
 
 @app.route('/locations', methods=['GET', 'POST'])
 def handle_locations():
