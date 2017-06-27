@@ -14,8 +14,8 @@ app.config.from_object(__name__) # load config from this file , carcampr.py
 app.config.update(dict(
     DATABASE=os.path.join(app.root_path, 'data/db.sqlite'),
     SECRET_KEY='93WQPOOX8VO49uf5Sy0xIMgwSh7KmaPWR2tr',
-    USERNAME='admin',
-    PASSWORD='default'
+    USERNAME='muir',
+    PASSWORD='iloveCA123' #clearly this should be changed to storing password in db using Bcrypt
 ))
 app.config.from_envvar('CARCAMPR_SETTINGS', silent=True)
 
@@ -53,17 +53,49 @@ def close_db(error):
     if hasattr(g, 'sqlite_db'):
         g.sqlite_db.close()
 
-### db helper functions stop
+### db helper functions end
+
+### view definitions start
 
 def save_new_location():
-    return 'received location post request. Saving Json: %s' % request.get_json()
+    if not session.get('logged_in'):
+        abort(401)
+    db = get_db()
+    db.execute('INSERT INTO locations (name, coordinates, description) values (?, ?, ?)',
+               [request.form['name'], request.form['coordinates'], request.form['description']])
+    db.commit()
+    flash('New location entry was successfully posted')
+    return redirect(url_for('handle_locations'))
 
 def show_all_locations():
-    return 'All of the locations!'
+    db = get_db()
+    cur = db.execute('SELECT name, coordinates, description FROM locations ORDER BY id DESC')
+    locations = cur.fetchall()
+    return render_template('show_all_locations.html', locations=locations)
 
 @app.route('/')
 def hello_world():
     return 'Hello! This is the placeholder index page!'
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    error = None
+    if request.method == 'POST':
+        if request.form['username'] != app.config['USERNAME']:
+            error = 'Invalid username'
+        elif request.form['password'] != app.config['PASSWORD']:
+            error = 'Invalid password'
+        else:
+            session['logged_in'] = True
+            flash('You were logged in')
+            return redirect(url_for('handle_locations'))
+    return render_template('login.html', error=error)
+
+@app.route('/logout')
+def logout():
+    session.pop('logged_in', None)
+    flash('You were logged out')
+    return redirect(url_for('handle_locations'))
 
 @app.route('/locations', methods=['GET', 'POST'])
 def handle_locations():
@@ -78,6 +110,8 @@ def handle_locations():
 def show_location(location_id):
     # return the location corresponding to the given id
     return 'Location %d' % location_id
+
+### view definitions end
 
 if __name__ == '__main__':
     app.run()

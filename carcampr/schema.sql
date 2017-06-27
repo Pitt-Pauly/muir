@@ -11,9 +11,9 @@ CREATE TABLE locations (
   name TEXT NOT null,
   coordinates TEXT NOT null,
   description TEXT NOT null,
-  status TEXT NOT NULL,
-  created_at DATETIME NOT NULL,
-  updated_at DATETIME NOT NULL
+  status TEXT DEFAULT 'new',
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 DROP TABLE IF EXISTS location_adjustments;
