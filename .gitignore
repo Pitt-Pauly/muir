@@ -3,3 +3,4 @@ ideas
 car_camp_app.egg-info/
 CARCAMPR/
 *.egg-info
+.cache
