@@ -1,3 +1,3 @@
-graft car_camp_app/templates
-graft car_camp_app/static
-include car_camp_app/schema.sql
+graft carcampr/templates
+graft carcampr/static
+include carcampr/schema.sql
