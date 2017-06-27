@@ -12,12 +12,12 @@ app.config.from_object(__name__) # load config from this file , carcampr.py
 
 # Load default config and override config from an environment variable
 app.config.update(dict(
-    DATABASE=os.path.join(app.root_path, '/data/db.sqlite'),
+    DATABASE=os.path.join(app.root_path, 'data/db.sqlite'),
     SECRET_KEY='93WQPOOX8VO49uf5Sy0xIMgwSh7KmaPWR2tr',
-    USERNAME='muir',
+    USERNAME='admin',
     PASSWORD='default'
 ))
-app.config.from_envvar('CARCAMP_SETTINGS', silent=True)
+app.config.from_envvar('CARCAMPR_SETTINGS', silent=True)
 
 ### app config end
 
@@ -28,6 +28,30 @@ def connect_db():
     rv = sqlite3.connect(app.config['DATABASE'])
     rv.row_factory = sqlite3.Row
     return rv
+
+def get_db():
+    """Opens a new database connection if there is none yet for the current application context. """
+    if not hasattr(g, 'sqlite_db'):
+        g.sqlite_db = connect_db()
+    return g.sqlite_db
+
+def init_db():
+    db = get_db()
+    with app.open_resource('schema.sql', mode='r') as f:
+        db.cursor().executescript(f.read())
+        db.commit()
+
+@app.cli.command('initdb')
+def initdb_command():
+    """Initializes the database."""
+    init_db()
+    print('Initialized the database.')
+
+@app.teardown_appcontext
+def close_db(error):
+    """Closes the database again at the end of the request."""
+    if hasattr(g, 'sqlite_db'):
+        g.sqlite_db.close()
 
 ### db helper functions stop
 
