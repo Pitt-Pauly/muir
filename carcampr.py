@@ -1,6 +1,35 @@
+import os
+import sqlite3
+from flask import Flask, request, session, g, redirect, url_for, abort, \
+render_template, flash
 from flask import Flask, request, json
 
 app = Flask(__name__)
+
+### app config start
+
+app.config.from_object(__name__) # load config from this file , carcampr.py
+
+# Load default config and override config from an environment variable
+app.config.update(dict(
+    DATABASE=os.path.join(app.root_path, '/data/db.sqlite'),
+    SECRET_KEY='93WQPOOX8VO49uf5Sy0xIMgwSh7KmaPWR2tr',
+    USERNAME='muir',
+    PASSWORD='default'
+))
+app.config.from_envvar('CARCAMP_SETTINGS', silent=True)
+
+### app config end
+
+### db helper functions start
+
+def connect_db():
+    """Connects to the specific database."""
+    rv = sqlite3.connect(app.config['DATABASE'])
+    rv.row_factory = sqlite3.Row
+    return rv
+
+### db helper functions stop
 
 def save_new_location():
     return 'received location post request. Saving Json: %s' % request.get_json()
